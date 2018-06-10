@@ -128,9 +128,9 @@ router.get('/:userID', requireAuthentication, function (req, res, next) {
   }
 });
 
-function getBusinessByOwnerID(ownerID, mysqlPool) {
+function getSongByOwnerID(ownerID, mysqlPool) {
   return new Promise((resolve, reject) => {
-    mysqlPool.query('SELECT * FROM businesses WHERE ownerID = ?', [ ownerID ], function (err, results) {
+    mysqlPool.query('SELECT * FROM songs WHERE ownerID = ?', [ ownerID ], function (err, results) {
       if (err) {
         reject(err);
       } else {
@@ -140,10 +140,10 @@ function getBusinessByOwnerID(ownerID, mysqlPool) {
   });
 }
 
-router.get('/:userID/businesses', requireAuthentication, function (req, res, next) {
+router.get('/:userID/songs', requireAuthentication, function (req, res, next) {
   const mysqlPool = req.app.locals.mysqlPool;
   const ownerID = req.params.userID;
-  getBusinessByOwnerID(ownerID, mysqlPool)
+  getSongByOwnerID(ownerID, mysqlPool)
     .then((ownerBus) => {
       res.status(200).json({
         businesses: ownerBus

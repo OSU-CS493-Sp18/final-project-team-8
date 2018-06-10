@@ -6,11 +6,10 @@ const { getUserByID } = require('./users');
  * Schema describing required/optional fields of a review object.
  */
 const reviewSchema = {
-  userid: { required: true },
-  businessid: { required: true },
-  dollars: { required: true },
+  userID: { required: true },
+  playlistID: { required: true },
   stars: { required: true },
-  review: { required: false }
+  review: { required: true }
 };
 
 
@@ -20,11 +19,11 @@ const reviewSchema = {
  * specified user has already reviewed the specified business or false
  * otherwise.
  */
-function hasUserReviewedBusiness(userID, businessID, mysqlPool) {
+function hasUserReviewedPlaylist(userID, playlistID, mysqlPool) {
   return new Promise((resolve, reject) => {
     mysqlPool.query(
-      'SELECT COUNT(*) AS count FROM reviews WHERE userid = ? AND businessid = ?',
-      [ userID, businessID ],
+      'SELECT COUNT(*) AS count FROM reviews WHERE userID = ? AND playlistID = ?',
+      [ userID, playlistID ],
       function (err, results) {
         if (err) {
           reject(err);
@@ -40,7 +39,7 @@ function hasUserReviewedBusiness(userID, businessID, mysqlPool) {
  * Executes a MySQL query to insert a new review into the database.  Returns
  * a Promise that resolves to the ID of the newly-created review entry.
  */
-function insertNewReview(review, mysqlPool, mongoDB) {
+function insertNewReview(review, mysqlPool) {
   return new Promise((resolve, reject) => {
     review = validation.extractValidFields(review, reviewSchema);
     review.id = null;
@@ -57,27 +56,22 @@ function insertNewReview(review, mysqlPool, mongoDB) {
     );
   });
 }
-
 /*
  * Route to create a new review.
  */
 router.post('/', function (req, res, next) {
   const mysqlPool = req.app.locals.mysqlPool;
-  const mongoDB = req.app.locals.mongoDB;
   if (validation.validateAgainstSchema(req.body, reviewSchema)) {
-    hasUserReviewedBusiness(req.body.userid, req.body.businessid, mysqlPool)
-      .then((userReviewedThisBusinessAlready) => {
-        if (userReviewedThisBusinessAlready) {
+    /*
+     * Make sure the user is not trying to review the same business twice.
+     * If they're not, then insert their review into the DB.
+     */
+    hasUserReviewedPlaylist(req.body.userID, req.body.playlistID, mysqlPool)
+      .then((userReviewedThisPLAlready) => {
+        if (userReviewedThisPLAlready) {
           return Promise.reject(403);
         } else {
-          getUserByID(req.body.userid, mongoDB)
-            .then((user) => {
-              if (user) {
-                return insertNewReview(req.body, mysqlPool, mongoDB);
-              } else {
-                return Promise.reject(400);
-              }
-            })
+          return insertNewReview(req.body, mysqlPool);
         }
       })
       .then((id) => {
@@ -85,16 +79,16 @@ router.post('/', function (req, res, next) {
           id: id,
           links: {
             review: `/reviews/${id}`,
-            business: `/businesses/${req.body.businessid}`
           }
         });
       })
       .catch((err) => {
         if (err === 403) {
           res.status(403).json({
-            error: "User has already posted a review of this business"
+            error: "User has already posted a review of this playlist"
           });
         } else {
+          console.log(err);
           res.status(500).json({
             error: "Error inserting review into DB.  Please try again later."
           });
@@ -106,7 +100,6 @@ router.post('/', function (req, res, next) {
     });
   }
 });
-
 /*
  * Executes a MySQL query to fetch a single specified review based on its ID.
  * Returns a Promise that resolves to an object containing the requested
@@ -124,7 +117,6 @@ function getReviewByID(reviewID, mysqlPool) {
     });
   });
 }
-
 /*
  * Route to fetch info about a specific review.
  */

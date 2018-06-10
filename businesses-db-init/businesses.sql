@@ -83,7 +83,7 @@ DROP TABLE IF EXISTS `reviews`;
 CREATE TABLE `reviews` (
   `id` mediumint(9) NOT NULL AUTO_INCREMENT,
   `userID` char(24) NOT NULL,
-  `songID` char(24) NOT NULL,
+  `playlistID` char(24) NOT NULL,
   `stars` char(24) NOT NULL,
   `review` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
