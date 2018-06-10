@@ -15,25 +15,22 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-USE businesses;
+USE music;
 --
 -- Table structure for table `businesses`
 --
 
-DROP TABLE IF EXISTS `businesses`;
+DROP TABLE IF EXISTS `songs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `businesses` (
+CREATE TABLE `songs` (
   `id` mediumint(9) NOT NULL AUTO_INCREMENT,
   `ownerID` char(24) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `address` varchar(255) NOT NULL,
-  `city` varchar(255) NOT NULL,
-  `state` char(2) NOT NULL,
-  `zip` char(5) NOT NULL,
-  `phone` varchar(255) NOT NULL,
-  `category` varchar(255) NOT NULL,
-  `subcategory` varchar(255) NOT NULL,
+  `length` varchar(255) NOT NULL,
+  `artist` varchar(255) NOT NULL,
+  `album` varchar(255) NOT NULL,
+  `genre` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_ownerID` (`ownerID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -43,7 +40,7 @@ CREATE TABLE `businesses` (
 -- Dumping data for table `businesses`
 --
 
-LOCK TABLES `businesses` WRITE;
+LOCK TABLES `songs` WRITE;
 /*!40000 ALTER TABLE `businesses` DISABLE KEYS */;
 /*!40000 ALTER TABLE `businesses` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -52,15 +49,16 @@ UNLOCK TABLES;
 -- Table structure for table `photos`
 --
 
-DROP TABLE IF EXISTS `photos`;
+DROP TABLE IF EXISTS `playlist`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `photos` (
+CREATE TABLE `playlist` (
   `id` mediumint(9) NOT NULL AUTO_INCREMENT,
   `userID` char(24) NOT NULL,
-  `businessID` char(24) NOT NULL,
-  `caption` varchar(255) NOT NULL,
-  `data` varchar(255) NOT NULL,
+  `song1` varchar(255) NOT NULL,
+  `song2` varchar(255) NOT NULL,
+  `song3` varchar(255) NOT NULL,
+  'description' varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_userID` (`userID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -70,7 +68,7 @@ CREATE TABLE `photos` (
 -- Dumping data for table `photos`
 --
 
-LOCK TABLES `photos` WRITE;
+LOCK TABLES `playlist` WRITE;
 /*!40000 ALTER TABLE `photos` DISABLE KEYS */;
 /*!40000 ALTER TABLE `photos` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -85,8 +83,7 @@ DROP TABLE IF EXISTS `reviews`;
 CREATE TABLE `reviews` (
   `id` mediumint(9) NOT NULL AUTO_INCREMENT,
   `userID` char(24) NOT NULL,
-  `businessID` char(24) NOT NULL,
-  `dollars` char(24) NOT NULL,
+  `songID` char(24) NOT NULL,
   `stars` char(24) NOT NULL,
   `review` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
