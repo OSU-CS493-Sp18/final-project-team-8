@@ -17,7 +17,7 @@
 
 USE music;
 --
--- Table structure for table `businesses`
+-- Table structure for table `songs`
 --
 
 DROP TABLE IF EXISTS `songs`;
@@ -37,16 +37,16 @@ CREATE TABLE `songs` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `businesses`
+-- Dumping data for table `songs`
 --
 
 LOCK TABLES `songs` WRITE;
-/*!40000 ALTER TABLE `businesses` DISABLE KEYS */;
-/*!40000 ALTER TABLE `businesses` ENABLE KEYS */;
+/*!40000 ALTER TABLE `songs` DISABLE KEYS */;
+/*!40000 ALTER TABLE `songs` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `photos`
+-- Table structure for table `playlist`
 --
 
 DROP TABLE IF EXISTS `playlist`;
@@ -65,12 +65,12 @@ CREATE TABLE `playlist` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `photos`
+-- Dumping data for table `playlist`
 --
 
 LOCK TABLES `playlist` WRITE;
-/*!40000 ALTER TABLE `photos` DISABLE KEYS */;
-/*!40000 ALTER TABLE `photos` ENABLE KEYS */;
+/*!40000 ALTER TABLE `playlist` DISABLE KEYS */;
+/*!40000 ALTER TABLE `playlist` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
