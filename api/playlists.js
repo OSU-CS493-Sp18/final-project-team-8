@@ -4,24 +4,25 @@ const validation = require('../lib/validation');
 /*
  * Schema describing required/optional fields of a photo object.
  */
-const photoSchema = {
-  userid: { required: true },
-  businessid: { required: true },
-  caption: { required: false },
-  data: { required: true }
+const playlistSchema = {
+  userID: { required: true },
+  song1: { required: true },
+  song2: { required: true },
+  song3: { required: true },
+  description: { required: true }
 };
 
 /*
  * Executes a MySQL query to insert a new photo into the database.  Returns
- * a Promise that resolves to the ID of the newly-created photo entry.
+ * a Promise that resolves to the ID of the newly-created playlist entry.
  */
-function insertNewPhoto(photo, mysqlPool) {
+function insertNewPlaylist(playlist, mysqlPool) {
   return new Promise((resolve, reject) => {
-    photo = validation.extractValidFields(photo, photoSchema);
-    photo.id = null;
+    playlist = validation.extractValidFields(playlist, playlistSchema);
+    playlist.id = null;
     mysqlPool.query(
-      'INSERT INTO photos SET ?',
-      photo,
+      'INSERT INTO playlist SET ?',
+      playlist,
       function (err, result) {
         if (err) {
           reject(err);
@@ -34,24 +35,23 @@ function insertNewPhoto(photo, mysqlPool) {
 }
 
 /*
- * Route to create a new photo.
+ * Route to create a new playlist.
  */
 router.post('/', function (req, res, next) {
   const mysqlPool = req.app.locals.mysqlPool;
-  if (validation.validateAgainstSchema(req.body, photoSchema)) {
-    insertNewPhoto(req.body, mysqlPool)
+  if (validation.validateAgainstSchema(req.body, playlistSchema)) {
+    insertNewPlaylist(req.body, mysqlPool)
       .then((id) => {
         res.status(201).json({
           id: id,
           links: {
-            photo: `/photos/${id}`,
-            business: `/businesses/${req.body.businessid}`
+            playlist: `/playlists/${id}`,
           }
         });
       })
       .catch((err) => {
         res.status(500).json({
-          error: "Error inserting photo into DB.  Please try again later."
+          error: "Error inserting playlist into DB.  Please try again later."
         });
       });
   } else {
@@ -62,14 +62,14 @@ router.post('/', function (req, res, next) {
 });
 
 /*
- * Executes a MySQL query to fetch a single specified photo based on its ID.
+ * Executes a MySQL query to fetch a single specified playlist based on its ID.
  * Returns a Promise that resolves to an object containing the requested
  * photo.  If no photo with the specified ID exists, the returned Promise
  * will resolve to null.
  */
-function getPhotoByID(photoID, mysqlPool) {
+function getPlaylistByID(playlistID, mysqlPool) {
   return new Promise((resolve, reject) => {
-    mysqlPool.query('SELECT * FROM photos WHERE id = ?', [ photoID ], function (err, results) {
+    mysqlPool.query('SELECT * FROM playlist WHERE id = ?', [ playlistID ], function (err, results) {
       if (err) {
         reject(err);
       } else {
@@ -82,20 +82,20 @@ function getPhotoByID(photoID, mysqlPool) {
 /*
  * Route to fetch info about a specific photo.
  */
-router.get('/:photoID', function (req, res, next) {
+router.get('/:playlistID', function (req, res, next) {
   const mysqlPool = req.app.locals.mysqlPool;
-  const photoID = parseInt(req.params.photoID);
-  getPhotoByID(photoID, mysqlPool)
-    .then((photo) => {
-      if (photo) {
-        res.status(200).json(photo);
+  const playlistID = parseInt(req.params.playlistID);
+  getPlaylistByID(playlistID, mysqlPool)
+    .then((playlist) => {
+      if (playlist) {
+        res.status(200).json(playlist);
       } else {
         next();
       }
     })
     .catch((err) => {
       res.status(500).json({
-        error: "Unable to fetch photo.  Please try again later."
+        error: "Unable to fetch playlist.  Please try again later."
       });
     });
 });

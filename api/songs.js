@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const validation = require('../lib/validation');
 const { getReviewsByBusinessID } = require('./reviews');
-const { getPhotosByBusinessID } = require('./photos');
+const { getPhotosByBusinessID } = require('./playlists');
 const { addSongToUser, getUserByID } = require('./users');
 
 
