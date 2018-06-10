@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const { getBusinessesByOwnerID } = require('./businesses');
+const { getBusinessesByOwnerID } = require('./songs');
 const { getReviewsByUserID } = require('./reviews');
 const { getPhotosByUserID } = require('./photos');
 

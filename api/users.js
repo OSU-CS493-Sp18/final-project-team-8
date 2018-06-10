@@ -226,16 +226,16 @@ router.get('/:userID/photos', requireAuthentication, function (req, res) {
     });
 });
 
-function addBusinessToUser(businessID, userID, mongoDB) {
+function addSongToUser(songID, userID, mongoDB) {
   const usersCollection = mongoDB.collection('users');
   return usersCollection.updateOne(
     { userID: userID },
-    { $push: { businesses: businessID } }
+    { $push: { songs: songID } }
   ).then(() => {
-    return Promise.resolve(businessID);
+    return Promise.resolve(songID);
   });
 }
 
 exports.router = router;
 exports.getUserByID = getUserByID;
-exports.addBusinessToUser = addBusinessToUser;
+exports.addSongToUser = addSongToUser;

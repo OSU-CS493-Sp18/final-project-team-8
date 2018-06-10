@@ -2,33 +2,28 @@ const router = require('express').Router();
 const validation = require('../lib/validation');
 const { getReviewsByBusinessID } = require('./reviews');
 const { getPhotosByBusinessID } = require('./photos');
-const { addBusinessToUser, getUserByID } = require('./users');
+const { addSongToUser, getUserByID } = require('./users');
 
 
 /*
  * Schema describing required/optional fields of a business object.
  */
-const businessSchema = {
+const songSchema = {
   ownerID: { required: true },
   name: { required: true },
-  address: { required: true },
-  city: { required: true },
-  state: { required: true },
-  zip: { required: true },
-  phone: { required: true },
-  category: { required: true },
-  subcategory: { required: true },
-  website: { required: false },
-  email: { required: false }
+  length: { required: true },
+  artist: { required: true },
+  album: { required: true },
+  genre: { required: false }
 };
 
 /*
  * Executes a MySQL query to fetch the total number of businesses.  Returns
  * a Promise that resolves to this count.
  */
-function getBusinessesCount(mysqlPool) {
+function getSongsCount(mysqlPool) {
   return new Promise((resolve, reject) => {
-    mysqlPool.query('SELECT COUNT(*) AS count FROM businesses', function (err, results) {
+    mysqlPool.query('SELECT COUNT(*) AS count FROM songs', function (err, results) {
       if (err) {
         reject(err);
       } else {
@@ -42,7 +37,7 @@ function getBusinessesCount(mysqlPool) {
  * Executes a MySQL query to return a single page of businesses.  Returns a
  * Promise that resolves to an array containing the fetched page of businesses.
  */
-function getBusinessesPage(page, totalCount, mysqlPool) {
+function getSongsPage(page, totalCount, mysqlPool) {
   return new Promise((resolve, reject) => {
     /*
      * Compute last page number and make sure page is within allowed bounds.
@@ -55,14 +50,14 @@ function getBusinessesPage(page, totalCount, mysqlPool) {
     const offset = (page - 1) * numPerPage;
 
     mysqlPool.query(
-      'SELECT * FROM businesses ORDER BY id LIMIT ?,?',
+      'SELECT * FROM songs ORDER BY id LIMIT ?,?',
       [ offset, numPerPage ],
       function (err, results) {
         if (err) {
           reject(err);
         } else {
           resolve({
-            businesses: results,
+            songs: results,
             pageNumber: page,
             totalPages: lastPage,
             pageSize: numPerPage,
@@ -75,49 +70,49 @@ function getBusinessesPage(page, totalCount, mysqlPool) {
 }
 
 /*
- * Route to return a paginated list of businesses.
+ * Route to return a paginated list of songs.
  */
 router.get('/', function (req, res) {
   const mysqlPool = req.app.locals.mysqlPool;
-  getBusinessesCount(mysqlPool)
+  getSongsCount(mysqlPool)
     .then((count) => {
-      return getBusinessesPage(parseInt(req.query.page) || 1, count, mysqlPool);
+      return getSongsPage(parseInt(req.query.page) || 1, count, mysqlPool);
     })
-    .then((businessesPageInfo) => {
+    .then((songsPageInfo) => {
       /*
        * Generate HATEOAS links for surrounding pages and then send response.
        */
-      businessesPageInfo.links = {};
-      let { links, pageNumber, totalPages } = businessesPageInfo;
+      songsPageInfo.links = {};
+      let { links, pageNumber, totalPages } = songsPageInfo;
       if (pageNumber < totalPages) {
-        links.nextPage = `/businesses?page=${pageNumber + 1}`;
-        links.lastPage = `/businesses?page=${totalPages}`;
+        links.nextPage = `/songs?page=${pageNumber + 1}`;
+        links.lastPage = `/songs?page=${totalPages}`;
       }
       if (pageNumber > 1) {
-        links.prevPage = `/businesses?page=${pageNumber - 1}`;
-        links.firstPage = '/businesses?page=1';
+        links.prevPage = `/songs?page=${pageNumber - 1}`;
+        links.firstPage = '/songs?page=1';
       }
-      res.status(200).json(businessesPageInfo);
+      res.status(200).json(songsPageInfo);
     })
     .catch((err) => {
       console.log(err);
       res.status(500).json({
-        error: "Error fetching businesses list.  Please try again later."
+        error: "Error fetching songs list.  Please try again later."
       });
     });
 });
 
 /*
- * Executes a MySQL query to insert a new business into the database.  Returns
- * a Promise that resolves to the ID of the newly-created business entry.
+ * Executes a MySQL query to insert a new song into the database.  Returns
+ * a Promise that resolves to the ID of the newly-created song entry.
  */
-function insertNewBusiness(business, mysqlPool, mongoDB) {
+function insertNewSong(song, mysqlPool, mongoDB) {
   return new Promise((resolve, reject) => {
-    business = validation.extractValidFields(business, businessSchema);
-    business.id = null;
+    song = validation.extractValidFields(song, songSchema);
+    song.id = null;
     mysqlPool.query(
-      'INSERT INTO businesses SET ?',
-      business,
+      'INSERT INTO songs SET ?',
+      song,
       function (err, result) {
         if (err) {
           reject(err);
@@ -127,21 +122,21 @@ function insertNewBusiness(business, mysqlPool, mongoDB) {
       }
     );
   }).then((id) => {
-    return addBusinessToUser(id, business.ownerID, mongoDB);
+    return addSongToUser(id, song.ownerID, mongoDB);
   });
 }
 
 /*
- * Route to create a new business.
+ * Route to create a new song.
  */
 router.post('/', function (req, res, next) {
   const mysqlPool = req.app.locals.mysqlPool;
   const mongoDB = req.app.locals.mongoDB;
-  if (validation.validateAgainstSchema(req.body, businessSchema)) {
+  if (validation.validateAgainstSchema(req.body, songSchema)) {
     getUserByID(req.body.ownerID, mongoDB)
       .then((user) => {
         if (user) {
-          return insertNewBusiness(req.body, mysqlPool, mongoDB);
+          return insertNewSong(req.body, mysqlPool, mongoDB);
         } else {
           return Promise.reject(400);
         }
@@ -150,7 +145,7 @@ router.post('/', function (req, res, next) {
         res.status(201).json({
           id: id,
           links: {
-            business: `/businesses/${id}`
+            song: `/songs/${id}`
           }
         });
       })
@@ -161,7 +156,7 @@ router.post('/', function (req, res, next) {
           });
         } else {
           res.status(500).json({
-            error: "Error inserting lodging into DB.  Please try again later."
+            error: "Error inserting song into DB.  Please try again later."
           });
         }
       });
@@ -175,7 +170,7 @@ router.post('/', function (req, res, next) {
 
 /*
  * Executes a MySQL query to fetch information about a single specified
- * business based on its ID.  Returns a Promise that resolves to an object
+ * song based on its ID.  Returns a Promise that resolves to an object
  * containing information about the requested business.  If no business with
  * the specified ID exists, the returned Promise will resolve to null.
  */
