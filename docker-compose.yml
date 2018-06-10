@@ -1,0 +1,49 @@
+version: '3.6'
+services:
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+      - ./db-init/mongo:/docker-entrypoint-initdb.d
+    environment:
+      MONGO_INITDB_DATABASE: yelp
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 27017:27017
+
+  mysql:
+    image: mysql:5
+    restart: always
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./businesses-db-init/:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: businesses
+
+  api:
+    build: .
+    image: a3
+    restart: always
+    ports:
+      - 8000:8000
+    environment:
+      MYSQL_DATABASE: 'businesses'
+      MYSQL_USER: 'root'
+      MYSQL_PASSWORD: 'root'
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+
+      MONGO_DATABASE: 'yelp'
+      MONGO_PORT: 27017
+      MONGO_USER: 'rootx'
+      MONGO_HOST: mongo
+      MONGO_PASSWORD: 'rootx'
+
+volumes:
+  mysql-data:
+    name: businesses-mysql-data
+  mongo-data:
+    name: users-mongo-data
