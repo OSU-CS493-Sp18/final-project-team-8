@@ -16,7 +16,7 @@ function insertNewUser(user, mongoDB) {
         name: user.name,
         email: user.email,
         password: passwordHash,
-        businesses: []
+        songs: []
       };
       const usersCollection = mongoDB.collection('users');
       return usersCollection.insertOne(userDocument);
@@ -144,15 +144,15 @@ router.get('/:userID/songs', requireAuthentication, function (req, res, next) {
   const mysqlPool = req.app.locals.mysqlPool;
   const ownerID = req.params.userID;
   getSongByOwnerID(ownerID, mysqlPool)
-    .then((ownerBus) => {
+    .then((ownerSong) => {
       res.status(200).json({
-        businesses: ownerBus
+        songs: ownerSong
       });
     })
     .catch((err) => {
       console.log(err);
       res.status(500).json({
-        error: `Unable to fetch bus for user ${ownerID}`
+        error: `Unable to fetch song for user ${ownerID}`
       });
     });
 
@@ -192,10 +192,10 @@ router.get('/:userID/reviews', requireAuthentication, function (req, res) {
     });
 });
 
-function getPhotosByUserID(userID, mysqlPool) {
+function getPlaylistsByUserID(userID, mysqlPool) {
   return new Promise((resolve, reject) => {
     mysqlPool.query(
-      'SELECT * FROM photos WHERE userid = ?',
+      'SELECT * FROM playlist WHERE userid = ?',
       [ userID ],
       function (err, results) {
         if (err) {
@@ -208,20 +208,20 @@ function getPhotosByUserID(userID, mysqlPool) {
   });
 }
 
-router.get('/:userID/photos', requireAuthentication, function (req, res) {
+router.get('/:userID/playlists', requireAuthentication, function (req, res) {
   const mysqlPool = req.app.locals.mysqlPool;
   const userID = req.params.userID;
-  getPhotosByUserID(userID, mysqlPool)
-    .then((photos) => {
-      if (photos) {
-        res.status(200).json({ photos: photos });
+  getPlaylistsByUserID(userID, mysqlPool)
+    .then((playlists) => {
+      if (playlists) {
+        res.status(200).json({ playlists: playlists });
       } else {
         next();
       }
     })
     .catch((err) => {
       res.status(500).json({
-        error: "Unable to fetch photos.  Please try again later."
+        error: "Unable to fetch playlists.  Please try again later."
       });
     });
 });

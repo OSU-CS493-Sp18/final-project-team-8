@@ -172,7 +172,7 @@ router.put('/:reviewID', function (req, res, next) {
     getReviewByID(reviewID, mysqlPool)
       .then((existingReview) => {
         if (existingReview) {
-          if (updatedReview.businessid === existingReview.businessid && updatedReview.userid === existingReview.userid) {
+          if (updatedReview.playlistID === existingReview.playlistID && updatedReview.userID === existingReview.userID) {
             return replaceReviewByID(reviewID, updatedReview, mysqlPool);
           } else {
             return Promise.reject(403);
@@ -185,7 +185,6 @@ router.put('/:reviewID', function (req, res, next) {
         if (updateSuccessful) {
           res.status(200).json({
             links: {
-              business: `/businesses/${updatedReview.businessid}`,
               review: `/reviews/${reviewID}`
             }
           });
@@ -196,7 +195,7 @@ router.put('/:reviewID', function (req, res, next) {
       .catch((err) => {
         if (err === 403) {
           res.status(403).json({
-            error: "Updated review must have the same businessID and userID"
+            error: "Updated review must have the same playlistID and userID"
           });
         } else {
           res.status(500).json({
